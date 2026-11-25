@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ASTRAL VANGUARD: Crónicas de la Expedición Estelar</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body oncontextmenu="return false;">
+  <div id="game-shell">
+    <!-- Top Futuristic Ship Console / HUD -->
+    <header id="hud-top" class="hud-panel">
+      <div class="hud-group hud-vitals">
+        <div class="hud-badge">
+          <span class="hud-label">VIDAS</span>
+          <div id="hud-lives" class="lives-container" aria-label="Vidas"></div>
+        </div>
+
+        <div class="hud-bar-block">
+          <div class="hud-bar-header">
+            <span class="hud-label">ESCUDO DEFLECTOR</span>
+            <span id="hud-shield-pct" class="hud-val cyan">100%</span>
+          </div>
+          <div class="pixel-bar shield-bar">
+            <div id="hud-shield-fill" class="pixel-bar-fill"></div>
+          </div>
+        </div>
+
+        <div class="hud-bar-block">
+          <div class="hud-bar-header">
+            <span class="hud-label">CASCO NAVE</span>
+            <span id="hud-hull-pct" class="hud-val emerald">100%</span>
+          </div>
+          <div class="pixel-bar hull-bar">
+            <div id="hud-hull-fill" class="pixel-bar-fill"></div>
+          </div>
+        </div>
+
+        <div class="hud-badge status-badge">
+          <span class="hud-label">ESTADO NAVE</span>
+          <span id="hud-ship-status" class="status-pill status-optimal">ÓPTIMO</span>
+        </div>
+      </div>
+
+      <div class="hud-group hud-mission">
+        <div class="hud-metric">
+          <span class="hud-label">SECTOR / PLANETA</span>
+          <span id="hud-level" class="hud-val amber">01 · VELO CARMESÍ</span>
+          <div class="pixel-bar progress-bar">
+            <div id="hud-sector-progress" class="pixel-bar-fill"></div>
+          </div>
+        </div>
+        <div class="hud-metric compact">
+          <span class="hud-label">ESTRELLAS</span>
+          <span id="hud-stars" class="hud-val gold">★ 0</span>
+        </div>
+        <div class="hud-metric compact">
+          <span class="hud-label">PUNTUACIÓN</span>
+          <span id="hud-score" class="hud-val white">000000</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Viewport -->
+    <main id="viewport-frame">
+      <canvas id="gameCanvas" width="640" height="360"></canvas>
+      <div class="crt-scanlines" aria-hidden="true"></div>
+
+      <!-- Comms Transmission Banner (from Mothership USS Astral Discovery) -->
+      <div id="comms-banner" class="hidden">
+        <div class="comms-portrait">
+          <canvas id="commsCanvas" width="48" height="48"></canvas>
+        </div>
+        <div class="comms-body">
+          <div class="comms-sender">TRANSMISIÓN · NAVE NODRIZA USS ASTRAL DISCOVERY</div>
+          <div id="comms-text" class="comms-text"></div>
+        </div>
+      </div>
+
+      <!-- Start / Title Screen Overlay -->
+      <div id="overlay-menu" class="screen-overlay active">
+        <div class="overlay-card title-card">
+          <div class="eyebrow">EXPEDICIÓN INTERGALÁCTICA · PIXEL ART 32-BIT</div>
+          <h1 class="game-title">ASTRAL VANGUARD</h1>
+          <p class="subtitle">LA ODISEA DEL USS ASTRAL DISCOVERY</p>
+
+          <div class="lore-box">
+            <p>
+              La nave capital de exploración <strong>USS Astral Discovery</strong> encabeza la expedición hacia seis sistemas inexplorados.
+              Pilota la nave exploradora <strong>Valkyrie-X7</strong>, recolecta estrellas energéticas, descubre antiguas estaciones espaciales
+              y defiende la flota de flotas hostiles y peligros cósmicos.
+            </p>
+          </div>
+
+          <div class="controls-grid">
+            <div class="control-chip"><kbd>W</kbd> Arriba</div>
+            <div class="control-chip"><kbd>Z</kbd> Abajo</div>
+            <div class="control-chip"><kbd>A</kbd> Izquierda</div>
+            <div class="control-chip"><kbd>D</kbd> Derecha</div>
+            <div class="control-chip wide"><kbd>CLIC DERECHO</kbd> Disparar Láser</div>
+            <div class="control-chip"><kbd>P</kbd> Pausa</div>
+          </div>
+
+          <div class="menu-actions">
+            <button id="btn-start" class="retro-btn primary">INICIAR EXPEDICIÓN</button>
+          </div>
+          <div class="audio-hint">Al pulsar Iniciar se activará la banda sonora sinfónica-espacial adaptativa.</div>
+        </div>
+      </div>
+
+      <!-- Pause Overlay -->
+      <div id="overlay-pause" class="screen-overlay">
+        <div class="overlay-card compact-card">
+          <h2>SISTEMAS EN PAUSA</h2>
+          <p id="pause-sector-info" class="muted-text"></p>
+          <div class="menu-actions vertical">
+            <button id="btn-resume" class="retro-btn primary">REANUDAR MISIÓN</button>
+            <button id="btn-restart-pause" class="retro-btn secondary">REINICIAR DESDE SECTOR 1</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hangar / Upgrade Station Overlay (between sectors) -->
+      <div id="overlay-upgrade" class="screen-overlay">
+        <div class="overlay-card upgrade-card">
+          <div class="eyebrow">ACOPLAMIENTO COMPLETADO · USS ASTRAL DISCOVERY</div>
+          <h2 id="upgrade-title">BAHÍA DE MEJORAS — VALKYRIE-X7</h2>
+          <p id="upgrade-subtitle" class="muted-text"></p>
+
+          <div class="upgrade-wallet">
+            <span>ESTRELLAS DISPONIBLES:</span>
+            <strong id="upgrade-stars-val" class="gold">★ 0</strong>
+          </div>
+
+          <div id="upgrade-grid" class="upgrade-grid"></div>
+
+          <div class="menu-actions">
+            <button id="btn-next-sector" class="retro-btn primary">SALTAR AL SIGUIENTE SECTOR</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Victory / Game Over Overlay -->
+      <div id="overlay-end" class="screen-overlay">
+        <div class="overlay-card compact-card">
+          <div id="end-eyebrow" class="eyebrow"></div>
+          <h2 id="end-title"></h2>
+          <p id="end-summary" class="lore-text"></p>
+          <div class="end-stats">
+            <div><span>PUNTUACIÓN FINAL</span><strong id="end-score">0</strong></div>
+            <div><span>ESTRELLAS</span><strong id="end-stars">0</strong></div>
+            <div><span>SECTOR ALCANZADO</span><strong id="end-sector">1</strong></div>
+          </div>
+          <div class="menu-actions">
+            <button id="btn-play-again" class="retro-btn primary">NUEVA EXPEDICIÓN</button>
+            <button id="btn-back-menu" class="retro-btn secondary">MENÚ PRINCIPAL</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Bottom Ship Console: Audio & Weapon/System Telemetry -->
+    <footer id="hud-bottom" class="hud-panel">
+      <div class="hud-group telemetry-group">
+        <span class="telemetry-item">ARMA: <strong id="hud-weapon-tier" class="cyan">LÁSER MK-I</strong></span>
+        <span class="telemetry-item">MOTOR: <strong id="hud-engine-tier" class="amber">IÓN-I</strong></span>
+        <span class="telemetry-item">MÚSICA: <strong id="hud-music-state" class="emerald">MENÚ</strong></span>
+      </div>
+
+      <div class="hud-group audio-controls">
+        <button id="btn-mute" class="icon-btn" title="Silenciar / Activar Audio (M)">🔊 AUDIO: ON</button>
+        <button id="btn-music-toggle" class="icon-btn" title="Pausar / Reanudar Música">♪ MÚSICA: ON</button>
+        <label class="slider-control">
+          <span>MÚS</span>
+          <input id="vol-music" type="range" min="0" max="100" value="65" />
+        </label>
+        <label class="slider-control">
+          <span>SFX</span>
+          <input id="vol-sfx" type="range" min="0" max="100" value="75" />
+        </label>
+        <button id="btn-pause" class="icon-btn" title="Pausar Juego (P)">⏸ PAUSA</button>
+      </div>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
